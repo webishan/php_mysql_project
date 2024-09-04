@@ -24,7 +24,7 @@ adminLogin();
 
                 <!-- General Settings Section -->
 
-                <div class="card">
+                <div class="card border-0 shadow-sm mb-4">
                     <div class="card-body">
                         <div class="d-flex align-items-center justify-content-between mb-3">
                             <h5 class="card-title m-0">General Settings</h5>
@@ -67,6 +67,24 @@ adminLogin();
                         
                     </div>
                 </div>
+
+                <!-- Shutdown section -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <h5 class="card-title m-0">Shutdown Website</h5>
+                            <div class="form-check form-switch">
+                                <form>
+                                    <input onchange="upd_shutdown(this.value)" class="form-check-input" type="checkbox" id="shutdown-toggle">
+                                </form>
+                            </div>
+                        </div>
+                        <p class="card-text">
+                            No customer will be allowed to book hotel room, when shutdown mode is turned on.
+                        </p>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
@@ -79,10 +97,12 @@ adminLogin();
     function get_general()
     {
         let site_title = document.getElementById('site_title');
-        let site_about = document.getElementById('site_about';
+        let site_about = document.getElementById('site_about');
 
         let site_title_inp = document.getElementById('site_title_inp');
         let site_about_inp = document.getElementById('site_about_inp');
+
+        let shutdown_toggle = document.getElementById('shutdown-toggle');
 
         let xhr = new XMLHttpRequest();
         xhr.open("POST","ajax/settings_crud.php",true);
@@ -97,6 +117,17 @@ adminLogin();
             site_title_inp.value = general_data.site_title;
             site_about_inp.value = general_data.site_about;
 
+            if(general_data.shutdown == 0){
+                shutdown_toggle.checked = false;
+                shutdown_toggle.value = 0;
+            }
+            else{
+                shutdown_toggle.checked = true;
+                shutdown_toggle.value = 1;
+            }
+
+ 
+
         }
 
         xhr.send('get_general');
@@ -109,17 +140,46 @@ adminLogin();
         xhr.setRequestHeader('Content-Type','application/x-www-form-urlencoded');
 
         xhr.onload = function(){
-            // general_data = JSON.parse(this.responseText);
 
-            // site_title.innerText = general_data.site_title;
-            // site_about.innerText = general_data.site_about;
+            var myModal = document.getElementById('general-s');
+            var modal = bootstrap.Modal.getInstance(myModal);
+            modal.hide();
 
-            // site_title_inp.value = general_data.site_title;
-            // site_about_inp.value = general_data.site_about;
+            if(this.responseText == 1)
+        {
+            alert('success','Changes saved!');
+            get_general();
+        }
+        else
+        {
+            alert('error','No changes made!');
+
+        }
+
 
         }
 
         xhr.send('site_title='+site_title_val+'&site_about='+site_about_val+'&upd_general');        
+    }
+
+    function upd_shutdown(val){
+        let xhr = new XMLHttpRequest();
+        xhr.open("POST","ajax/settings_crud.php",true);
+        xhr.setRequestHeader('Content-Type','application/x-www-form-urlencoded');
+
+        xhr.onload = function(){
+            if(this.responseText == 1 && general_data.shutdown==0)
+            {
+                alert('success','Site has been shutdown!');
+            }
+            else
+            {
+                alert('success','Shutdown mode off!');
+            }
+            get_general();
+        }
+
+        xhr.send('upd_shutdown='+val); 
     }
 
     window.onload = function(){
